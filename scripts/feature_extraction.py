@@ -1,7 +1,9 @@
+import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-# from gensim.models import Word2Vec
+from gensim.models import Word2Vec
 from nltk.tokenize import word_tokenize
 import numpy as np
+
 
 
 def vectorize_bow(train_data, val_data, test_data):
@@ -20,19 +22,13 @@ def vectorize_tfidf(train_data, val_data, test_data):
     return X_train, X_val, X_test
 
 
-def vectorize_word2vec_data(train_data, val_data, test_data, vector_size=100, window=5, min_count=1, workers=4):
-    tokenized_data = [word_tokenize(data) for data in train_data]
-    word2vec_model = Word2Vec(sentences=tokenized_data, vector_size=vector_size, window=window, min_count=min_count,
-                              workers=workers)
-
-    vectors_train = [word2vec_model.wv[token] for data in train_data for token in word_tokenize(data) if
-                     token in word2vec_model.wv]
-    vectors_val = [word2vec_model.wv[token] for data in val_data for token in word_tokenize(data) if
-                   token in word2vec_model.wv]
-    vectors_test = [word2vec_model.wv[token] for data in test_data for token in word_tokenize(data) if
-                    token in word2vec_model.wv]
-
-    return vectors_train, vectors_val, vectors_test
+def vectorize_word2vec_data(data):
+    tokenized_data = data.apply(word_tokenize)
+    word2vec_model = Word2Vec(sentences=tokenized_data, vector_size=100, window=5, min_count=1, workers=4)
+    word2vec = tokenized_data.apply(
+        lambda x: np.mean([word2vec_model.wv[word] for word in x if word in word2vec_model.wv], axis=0) if x and any(
+            word in word2vec_model.wv for word in x) else np.zeros(word2vec_model.vector_size))
+    return pd.DataFrame(word2vec.tolist())
 
 
 def load_glove_model(file_path):
