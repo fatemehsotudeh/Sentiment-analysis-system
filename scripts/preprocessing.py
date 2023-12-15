@@ -54,7 +54,6 @@ def remove_stopwords(tokens):
 
 
 def stem_tokens(tokens):
-    # Use a stemming algorithm, such as Porter Stemmer
     stemmer = PorterStemmer()
     return [stemmer.stem(token) for token in tokens]
 
